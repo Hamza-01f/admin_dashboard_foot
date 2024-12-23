@@ -1,0 +1,39 @@
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: dashboard_mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: adminfutchampions
+      MYSQL_USER: user
+      MYSQL_PASSWORD: user_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: dashboard_phpmyadmin_container
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: root_password
+    ports:
+      - "8080:80"
+
+  php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    container_name: dashboard_php_container
+    restart: always
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "80:80"
+
+volumes:
+  mysql_data:
