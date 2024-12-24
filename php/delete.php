@@ -1,8 +1,8 @@
 <?php
 
 include_once __DIR__ . "/../my_php_project/config/db_connection.php";
-if (isset($_GET["id"])) {
-    $id = $_GET["id"];
+if (isset($_GET["delid"])) {
+    $id = $_GET["delid"];
 
     $request = " delete from players
     WHERE players.id = '$id'

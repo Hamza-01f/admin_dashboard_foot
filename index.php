@@ -3,10 +3,35 @@
 <?php
     include_once __DIR__."/my_php_project/config/db_connection.php";
 
-    $sql_rq = "SELECT players.id, name_player, position, rating, photo, nationality.nationality, nationality.flag, club.logo, club.club_name
-    FROM players 
-    INNER JOIN nationality ON players.nationality_id = nationality.id
-    INNER JOIN club ON players.club_id = club.id
+    $sql_rq = "SELECT players.id, 
+                      name_player, 
+                      position, 
+                      rating, 
+                      photo, 
+                      nationality.nationality, 
+                      nationality.flag, club.logo, 
+                      club.club_name,
+
+                      players_fields.pace, 
+                      players_fields.shooting, 
+                      players_fields.passing, 
+                      players_fields.dribbling, 
+                      players_fields.defending, 
+                      players_fields.physical,
+
+                      gk_fields.diving, 
+                      gk_fields.handling, 
+                      gk_fields.kicking, 
+                      gk_fields.reflexes, 
+                      gk_fields.speed, 
+                      gk_fields.positioning
+
+                      FROM players 
+                      INNER JOIN nationality ON players.nationality_id = nationality.id
+                      INNER JOIN club ON players.club_id = club.id
+
+                      LEFT JOIN  players_fields ON players.id = players_fields.players_id
+                      LEFT JOIN gk_fields ON players.id = gk_fields.players_id
     ;";
     $query = mysqli_query($connection, $sql_rq);
 
@@ -25,6 +50,7 @@
     <link rel="stylesheet" href="./frontend/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body>
@@ -56,7 +82,9 @@
                     <span class="link-name">favorits players</span>
                 </a></li>
             </ul>
-            
+            <button type="button" class="bg-blue-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105" data-bs-toggle="modal" data-bs-target="#addPlayerModal">
+                            ADD PLAYER
+           </button>
             <ul class="logout-mode">
                 <li><a href="#">
                     <i class="uil uil-signout"></i>
@@ -87,52 +115,146 @@
             
             <img src="images/profile.jpg" alt="">
         </div>
-        <div class="dash-content">
-        <table class="table container-fluid">
-            <thead>
+        <div class="mt-20">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Players Info</h2>
+            <div class="overflow-x-auto bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-lg shadow-lg p-4 mb-8">
+                <table class="table-auto w-full text-white text-sm">
+                    <thead class="bg-gradient-to-r from-blue-700 to-blue-500 text-xl text-white">
+                        <tr>
+                            <th class="px-4 py-2 border-b border-gray-300">Number</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Name</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Position</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Rating</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Photo</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Nationality</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Flag</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Club</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Logo</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Pace</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Shooting</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Passing</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Dribbling</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Defending</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Physical</th>
+                            <th class="px-4 py-2 border-b border-gray-300">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="transition duration-500 ease-in-out transform hover:scale-105">
+                        <?php
+                        if (mysqli_num_rows($query) > 0) {
+                            $cont = 1;
+                            while ($row = mysqli_fetch_array($query)) {
+                                if ($row['position'] != 'GK') {
+                                    ?>
+                                    <tr class=" hover:bg-gray-500 transition-colors duration-300">
+                                        <td class="px-4 py-2 border-b text-center"><?php echo $cont; ?></td>
+                                        <td class="px-4 py-2 border-b"><?php echo $row['name_player']; ?></td>
+                                        <td class="px-4 py-2 border-b"><?php echo $row['position']; ?></td>
+                                        <td class="px-4 py-2 border-b"><?php echo $row['rating']; ?></td>
+                                        <td class="px-4 py-2 border-b text-center"><img src="<?php echo $row['photo']; ?>" alt="Player Photo" class="rounded-full h-10 w-10 object-cover"></td>
+                                        <td class="px-4 py-2 border-b"><?php echo $row['nationality']; ?></td>
+                                        <td class="px-4 py-2 border-b text-center"><img src="<?php echo $row['flag']; ?>" alt="Country Flag" class="rounded-full h-10 w-10 object-cover"></td>
+                                        <td class="px-4 py-2 border-b"><?php echo $row['club_name']; ?></td>
+                                        <td class="px-4 py-2 border-b text-center"><img src="<?php echo $row['logo']; ?>" alt="Club Logo" class="h-10 w-10 object-cover"></td>
+                                        <td class="px-4 py-2 border-b"><?php echo $row['pace']; ?></td>
+                                        <td class="px-4 py-2 border-b"><?php echo $row['shooting']; ?></td>
+                                        <td class="px-4 py-2 border-b"><?php echo $row['passing']; ?></td>
+                                        <td class="px-4 py-2 border-b"><?php echo $row['dribbling']; ?></td>
+                                        <td class="px-4 py-2 border-b"><?php echo $row['defending']; ?></td>
+                                        <td class="px-4 py-2 border-b"><?php echo $row['physical']; ?></td>
+                                        <td class="px-4 py-2 border-b text-center">
+                                            <a href="/php/update.php?editid=<?php echo htmlentities($row['id']); ?>" class="text-blue-600 hover:text-blue-800 transition duration-300 ease-in-out">
+                                                <svg height="35" width="35" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                                    <path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"/>
+                                                </svg>
+                                            </a>
+                                            <a href="php/delete.php?delid=<?php echo htmlentities($row['id']); ?>" class="text-red-600 hover:text-red-800 transition duration-300 ease-in-out" onclick="return confirm('Do you really want to delete?');">
+                                                <svg height="35" width="35" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                                    <path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"/>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <?php
+                                    $cont++;
+                                }
+                            }
+                        }
+                        ?>
+                    </tbody>
+                </table>
+            </div>
+     </div>
+    <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Goalkeepers Info</h2>
+    <div class="overflow-x-auto bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 rounded-lg shadow-lg p-4">
+        <table class="table-auto w-full text-white text-sm">
+            <thead class="bg-gradient-to-r from-blue-700 to-blue-500 text-xl text-white">
                 <tr>
-                    <th scope="col">id</th>
-                    <th scope="col">name</th>
-                    <th scope="col">position</th>
-                    <th scope="col">rating</th>
-                    <th scope="col">photo</th>
-                    <th scope="col">nationality</th>
-                    <th scope="col">flag</th>
-                    <th scope="col">club</th>
-                    <th scope="col">logo</th>
-                    <th><button type='button' class='btn btn-primary' data-bs-toggle="modal" data-bs-target="#addPlayerModal">ADD Player</button></th>
+                    <th class="px-4 py-2 border-b border-gray-300">Number</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Name</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Position</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Rating</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Photo</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Nationality</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Flag</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Club</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Logo</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Diving</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Handling</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Kicking</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Reflexes</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Speed</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Positioning</th>
+                    <th class="px-4 py-2 border-b border-gray-300">Action</th>
                 </tr>
             </thead>
-            <tbody>
-                <?
-                while ($row = mysqli_fetch_assoc($query)) {
-                    echo "<tr>";
-                      echo "<th>".$row['id']."</th>";
-                      echo "<th>".$row['name_player']."</th>";
-                      echo "<th>".$row['position']."</th>";
-                      echo "<th>".$row['rating']."</th>";
-                      echo "<td><img src='".$row['photo']."' alt='Club Logo' style='width:50px; height:50px;'></td>";
-                      echo "<th>".$row['nationality']."</th>";
-                      echo "<td><img src='".$row['flag']."' alt='Club Logo' style='width:35px; height:25px;'></td>";
-                      echo "<td>".$row['club_name']."</td>";
-                      echo "<td><img src='".$row['logo']."' alt='Club Logo' style='width:50px; height:50px;'></td>";
-                      echo "<td>
-                      <button type='button' class='btn btn-warning'>
-                          <a class='list-group-item list-group-item-action' href='./php/update.php?id=" . $row['id'] . "'>Modifier</a>
-                      </button>
-                      <button type='button' class='btn btn-danger'>
-                          <a class='list-group-item list-group-item-action' href='./php/delete.php?id=" . $row['id'] . "'>SUPPRIMER</a>
-                      </button>
-                  </td>";
-                  
-                  
-                      echo "</tr>";
+            <tbody class="transition duration-500 ease-in-out transform hover:scale-105">
+                <?php
+                mysqli_data_seek($query, 0);
+                if (mysqli_num_rows($query) > 0) {
+                    $cont = 1;
+                    while ($row = mysqli_fetch_array($query)) {
+                        if ($row['position'] == 'GK') {
+                            ?>
+                            <tr class=" hover:bg-gray-500 transition-colors duration-300">
+                                <td class="px-4 py-2 border-b text-center"><?php echo $cont; ?></td>
+                                <td class="px-4 py-2 border-b"><?php echo $row['name_player']; ?></td>
+                                <td class="px-4 py-2 border-b"><?php echo $row['position']; ?></td>
+                                <td class="px-4 py-2 border-b"><?php echo $row['rating']; ?></td>
+                                <td class="px-4 py-2 border-b text-center"><img src="<?php echo $row['photo']; ?>" alt="Player Photo" class="rounded-full h-10 w-10 object-cover"></td>
+                                <td class="px-4 py-2 border-b"><?php echo $row['nationality']; ?></td>
+                                <td class="px-4 py-2 border-b text-center"><img src="<?php echo $row['flag']; ?>" alt="Country Flag" class="rounded-full h-10 w-10 object-cover"></td>
+                                <td class="px-4 py-2 border-b"><?php echo $row['club_name']; ?></td>
+                                <td class="px-4 py-2 border-b text-center"><img src="<?php echo $row['logo']; ?>" alt="Club Logo" class="h-10 w-10 object-cover"></td>
+                                <td class="px-4 py-2 border-b"><?php echo $row['diving']; ?></td>
+                                <td class="px-4 py-2 border-b"><?php echo $row['handling']; ?></td>
+                                <td class="px-4 py-2 border-b"><?php echo $row['kicking']; ?></td>
+                                <td class="px-4 py-2 border-b"><?php echo $row['reflexes']; ?></td>
+                                <td class="px-4 py-2 border-b"><?php echo $row['speed']; ?></td>
+                                <td class="px-4 py-2 border-b"><?php echo $row['positioning']; ?></td>
+                                <td class="px-4 py-2 border-b text-center">
+                                    <a href="/php/update.php?editid=<?php echo htmlentities($row['id']); ?>" class="text-blue-600 hover:text-blue-800 transition duration-300 ease-in-out">
+                                        <svg height="35" width="35" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                                            <path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"/>
+                                        </svg>
+                                    </a>
+                                    <a href="php/delete.php?delid=<?php echo htmlentities($row['id']); ?>" class="text-red-600 hover:text-red-800 transition duration-300 ease-in-out" onclick="return confirm('Do you really want to delete?');">
+                                        <svg height="35" width="35" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+                                            <path d="M135.2 17.7L128 32 32 32C14.3 32 0 46.3 0 64S14.3 96 32 96l384 0c17.7 0 32-14.3 32-32s-14.3-32-32-32l-96 0-7.2-14.3C307.4 6.8 296.3 0 284.2 0L163.8 0c-12.1 0-23.2 6.8-28.6 17.7zM416 128L32 128 53.2 467c1.6 25.3 22.6 45 47.9 45l245.8 0c25.3 0 46.3-19.7 47.9-45L416 128z"/>
+                                        </svg>
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php
+                            $cont++;
+                        }
+                    }
                 }
-                mysqli_close($connection);
                 ?>
             </tbody>
         </table>
     </div>
+</div>
 
 <div class="modal fade" id="addPlayerModal" tabindex="-1" aria-labelledby="addPlayerModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -175,36 +297,35 @@
               <div class="col-md-6">
                   <label for="nationality" class="form-label">Nationality</label>
                   <select class="form-control"  name="nationality">
-                      <option>Select Nationality</option>
-                      <option value="146">belguim</option>
-                      <option value="145">Portugal</option>
+                     <option>Select Nationality</option>
                       <option value="144">Argentina</option>
-                      <option value="152">Morocco</option>
+                      <option value="145">Portugal</option>
+                      <option value="146">belguim</option>
                       <option value="147">France</option>
+                      <option value="148">Netherlands</option>
+                      <option value="149">Germany</option>
+                      <option value="150">Egypt</option>
+                      <option value="151">Croatia</option>
+                      <option value="152">Morocco</option>
+                      <option value="153">Norway</option>
+                      <option value="154">Canada</option>
                   </select>
-                  <div class="invalid-feedback">Please select a Nationality.</div>
-              </div>
-              <div class="col-md-6">
-                  <label for="flag" class="form-label">Flag URL</label>
-                  <input type="url" class="form-control"  name="flag">
-                  <div class="invalid-feedback">Please provide a valid URL for the flag.</div>
               </div>
               <div class="col-md-6">
                   <label for="club" class="form-label">Club</label>
                   <select class="form-control"  name="club">
                       <option>Select Club</option>
+                      <option value="61">Inter Miami</option>
+                      <option value="62">Al Nassr</option>
                       <option value="63">Manchester City</option>
                       <option value="64">Real Madrid</option>
+                      <option value="65">Al Hilal</option>
                       <option value="66">Liverpool</option>
-                      <option value="70">Manchester United</option>
                       <option value="67">Bayern Munich</option>
+                      <option value="68">Atletico Madrid</option>
+                      <option value="69">Al-Ittihad</option>
+                      <option value="70">Manchester United</option>
                   </select>
-                  <div class="invalid-feedback">Please select a Club.</div>
-              </div>
-              <div class="col-md-6">
-                  <label for="logo" class="form-label">Club URL</label>
-                  <input type="url" class="form-control" name="logo">
-                  <div class="invalid-feedback">Please provide a valid URL for the Club.</div>
               </div>
               <div id="field-stats" class="col-12" style="display: none;">
                   <div class="row">
@@ -267,13 +388,11 @@
 
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <input type="submit" form="form-player" class="btn btn-success" name="add_player" value="ADD Player">
-        
+        <input href="index.php" type="submit" form="form-player" class="btn btn-success" name="add_player" value="ADD Player"> 
       </div>
     </div>
   </div>
 </div>
-    <!--  -->
 </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

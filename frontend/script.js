@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', function (event) {
         let isValid = true;
 
-        // Validate only the input fields relevant to the chosen position
+       
         form.querySelectorAll('input').forEach(function (input) {
             if (isFieldRelevantToPosition(input, positionSelect.value)) {
                 if (!isValidInput(input)) {
@@ -56,12 +56,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // If the form is not valid, prevent submission
+     
         if (!isValid) {
             event.preventDefault();
             event.stopPropagation();
         } else {
-            // Display success message or perform form submission logic
+   
         }
     });
 
@@ -76,7 +76,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function isFieldRelevantToPosition(input, position) {
-        // Logic to determine if the input field is relevant to the chosen position
         if (position === 'GK') {
             return input.id === 'diving' || input.id === 'handling' || input.id === 'kicking' || input.id === 'reflexes';
         } else {
@@ -85,7 +84,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function isValidInput(input) {
-        // Custom validation logic for relevant input fields
         if (input.type === 'text' || input.type === 'number') {
             return input.value.trim() !== '';
         }

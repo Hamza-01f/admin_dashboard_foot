@@ -1,18 +1,18 @@
 <?php
 ob_start();
 include_once __DIR__ . "/../my_php_project/config/db_connection.php";
-if (isset($_GET["id"])) {
-    $id = $_GET["id"];
+if (isset($_GET["editid"])) {
+    $id = $_GET["editid"];
 
-    $request = "
-    SELECT p.*, n.nationality, n.flag, c.club_name, c.logo, gf.*, pf.*
-    FROM players p
-    INNER JOIN nationality n ON p.nationality_id = n.id
-    INNER JOIN club c ON p.club_id = c.id
-    LEFT JOIN gk_field gf ON p.id = gf.players_id
-    LEFT JOIN players_field pf ON p.id = pf.players_id
-    WHERE p.id = '$id'
-";
+//     $request = "
+//     SELECT p.*, n.nationality, n.flag, c.club_name, c.logo, gf.*, pf.*
+//     FROM players p
+//     INNER JOIN nationality n ON p.nationality_id = n.id
+//     INNER JOIN club c ON p.club_id = c.id
+//     LEFT JOIN gk_fields gf ON p.id = gf.players_id
+//     LEFT JOIN players_fields pf ON p.id = pf.players_id
+//     WHERE p.id = '$id'
+// ";
     $result = mysqli_query($connection, $request);
     if (!$result) {
         die("error:" . mysqli_error($connection));
@@ -26,13 +26,11 @@ if (isset($_GET["id"])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-
-    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+    <title>Update Player</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<?php
 
+<?php
 $club_query = "SELECT id FROM club";
 $club_result = mysqli_query($connection, $club_query);
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_player'])) {
@@ -45,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_player'])) {
     $fflag = $_POST['flag'];
     $flogo = $_POST['logo'];
     $fclub = $_POST['club'];
-
 
     while ($club_row = mysqli_fetch_assoc($club_result)) {
         $fclub = $club_row['id'];
@@ -68,8 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_player'])) {
             $fspeed = $_POST['speed'];
             $fpositioning = $_POST['positioning'];
 
-
-            $gk_update_query = "UPDATE gk_field SET
+            $gk_update_query = "UPDATE gk_fields SET
                         diving='$fdiving',
                         handling='$fhandling',
                         kicking='$fkicking',
@@ -78,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_player'])) {
                         positioning='$fpositioning'
                         WHERE id='$id'";
 
-            $result =      mysqli_query($connection, $gk_update_query);
+            $result = mysqli_query($connection, $gk_update_query);
         } else {
             $fpace = $_POST['pace'];
             $fshooting = $_POST['shooting'];
@@ -87,8 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_player'])) {
             $fdefending = $_POST['defending'];
             $fphysical = $_POST['physical'];
 
-
-            $field_update_query = "UPDATE players_field SET
+            $field_update_query = "UPDATE players_fields SET
                         pace='$fpace',
                         shooting='$fshooting',
                         passing='$fpassing',
@@ -103,163 +98,176 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_player'])) {
     if (!$result) {
         die("error:" . mysqli_error($connection));
     } else {
-        header(header: 'location:./../index.php');
+        header('location:./../index.php');
         ob_end_flush();
         exit();
     }
 }
 ?>
 
-<body>
-    <form id="form-player" class="needs-validation" novalidate action="update.php?new_id=<? echo $id; ?>" method="POST">
-        <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label for="name_player" class="form-label">Player Name</label>
-                <input type="text" class="form-control" name="name_player" value="<?php echo $row['name_player']; ?>">
-                <div class="invalid-feedback">Please provide a player name.</div>
-            </div>
-            <div class="col-md-6">
-                <label for="position" class="form-label">Position</label>
-                <select class="form-control" id="position" name="position" onchange="toggleFields()">
+<body class="bg-gray-100">
 
-                    <option>Select Position</option>
-                    <option value="GK" <?php echo ($row['position'] == 'GK') ? 'selected' : ''; ?>>GK</option>
-                    <option value="CB" <?php echo ($row['position'] == 'CB') ? 'selected' : ''; ?>>CB</option>
-                    <option value="MC" <?php echo ($row['position'] == 'MC') ? 'selected' : ''; ?>>MC</option>
-                    <option value="LW" <?php echo ($row['position'] == 'LW') ? 'selected' : ''; ?>>LW</option>
-                    <option value="ST" <?php echo ($row['position'] == 'ST') ? 'selected' : ''; ?>>ST</option>
-                    <option value="RW" <?php echo ($row['position'] == 'RW') ? 'selected' : ''; ?>>RW</option>
-                </select>
+    <div class="container mx-auto py-8">
+        <form id="form-player" class="bg-white shadow-lg rounded-lg p-8" method="POST" novalidate>
+            <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
 
-                <div class="invalid-feedback">Please select a position.</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="name_player" class="block text-lg font-medium text-gray-700">Player Name</label>
+                    <input type="text" name="name_player" value="<?php echo $row['name_player']; ?>" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <div class="text-sm text-red-500 mt-1 hidden">Please provide a player name.</div>
+                </div>
+                <div>
+                    <label for="position" class="block text-lg font-medium text-gray-700">Position</label>
+                    <select class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="position" onchange="toggleFields()">
+                        <option>Select Position</option>
+                        <option value="GK" <?php echo ($row['position'] == 'GK') ? 'selected' : ''; ?>>GK</option>
+                        <option value="CB" <?php echo ($row['position'] == 'CB') ? 'selected' : ''; ?>>CB</option>
+                        <option value="MC" <?php echo ($row['position'] == 'MC') ? 'selected' : ''; ?>>MC</option>
+                        <option value="LW" <?php echo ($row['position'] == 'LW') ? 'selected' : ''; ?>>LW</option>
+                        <option value="ST" <?php echo ($row['position'] == 'ST') ? 'selected' : ''; ?>>ST</option>
+                        <option value="RW" <?php echo ($row['position'] == 'RW') ? 'selected' : ''; ?>>RW</option>
+                    </select>
+                    <div class="text-sm text-red-500 mt-1 hidden">Please select a position.</div>
+                </div>
+                <div>
+                    <label for="rating" class="block text-lg font-medium text-gray-700">Rating</label>
+                    <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="rating" min="1" max="99" value="<?php echo $row['rating']; ?>">
+                    <div class="text-sm text-red-500 mt-1 hidden">Please provide a rating between 1 and 99.</div>
+                </div>
+                <div>
+                    <label for="photo" class="block text-lg font-medium text-gray-700">Photo URL</label>
+                    <input type="url" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="photo" value="<?php echo $row['photo']; ?>">
+                    <div class="text-sm text-red-500 mt-1 hidden">Please provide a valid URL for the photo.</div>
+                </div>
+                <div>
+                    <label for="nationality" class="block text-lg font-medium text-gray-700">Nationality</label>
+                    <select class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="nationality">
+                        <option>Select Nationality</option>
+                        <option value="144" <?php echo ($row['nationality_id'] == 144) ? 'selected' : ''; ?>>Argentina</option>
+                        <option value="145" <?php echo ($row['nationality_id'] == 145) ? 'selected' : ''; ?>>Portugal</option>
+                        <option value="146" <?php echo ($row['nationality_id'] == 146) ? 'selected' : ''; ?>>Belgium</option>
+                        <option value="147" <?php echo ($row['nationality_id'] == 147) ? 'selected' : ''; ?>>France</option>
+                        <option value="148" <?php echo ($row['nationality_id'] == 148) ? 'selected' : ''; ?>>Netherlands</option>
+                        <option value="149" <?php echo ($row['nationality_id'] == 149) ? 'selected' : ''; ?>>Germany</option>
+                        <option value="150" <?php echo ($row['nationality_id'] == 150) ? 'selected' : ''; ?>>Egypt</option>
+                        <option value="151" <?php echo ($row['nationality_id'] == 151) ? 'selected' : ''; ?>>Croatia</option>
+                        <option value="152" <?php echo ($row['nationality_id'] == 152) ? 'selected' : ''; ?>>Morocco</option>
+                        <option value="153" <?php echo ($row['nationality_id'] == 153) ? 'selected' : ''; ?>>Norway</option>
+                        <option value="154" <?php echo ($row['nationality_id'] == 154) ? 'selected' : ''; ?>>Canada</option>
+                    </select>
+                    <div class="text-sm text-red-500 mt-1 hidden">Please select a Nationality.</div>
+                </div>
+                <div>
+                    <label for="flag" class="block text-lg font-medium text-gray-700">Flag URL</label>
+                    <input type="url" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="flag" value="<?php echo $row['flag']; ?>">
+                    <div class="text-sm text-red-500 mt-1 hidden">Please provide a valid URL for the flag.</div>
+                </div>
+                <div>
+                    <label for="club" class="block text-lg font-medium text-gray-700">Club</label>
+                    <select class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="club">
+                        <option>Select Club</option>
+                        <option value="61" <?php echo ($row['club_id'] == 61) ? 'selected' : ''; ?>>Inter Miami</option>
+                        <option value="62" <?php echo ($row['club_id'] == 62) ? 'selected' : ''; ?>>Al Nassr</option>
+                        <option value="63" <?php echo ($row['club_id'] == 63) ? 'selected' : ''; ?>>Manchester City</option>
+                        <option value="64" <?php echo ($row['club_id'] == 64) ? 'selected' : ''; ?>>Real Madrid</option>
+                        <option value="65" <?php echo ($row['club_id'] == 65) ? 'selected' : ''; ?>>Al Hilal</option>
+                        <option value="66" <?php echo ($row['club_id'] == 66) ? 'selected' : ''; ?>>Liverpool</option>
+                        <option value="67" <?php echo ($row['club_id'] == 67) ? 'selected' : ''; ?>>Bayern Munich</option>
+                        <option value="68" <?php echo ($row['club_id'] == 68) ? 'selected' : ''; ?>>Atletico Madrid</option>
+                        <option value="69" <?php echo ($row['club_id'] == 69) ? 'selected' : ''; ?>>Al-Ittihad</option>
+                        <option value="70" <?php echo ($row['club_id'] == 70) ? 'selected' : ''; ?>>Manchester United</option>
+                    </select>
+                    <div class="text-sm text-red-500 mt-1 hidden">Please select a Club.</div>
+                </div>
+                <div>
+                    <label for="logo" class="block text-lg font-medium text-gray-700">Club URL</label>
+                    <input type="url" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="logo" value="<?php echo isset($row['logo']) ? $row['logo'] : ''; ?>">
+                    <div class="text-sm text-red-500 mt-1 hidden">Please provide a valid URL for the Club.</div>
+                </div>
             </div>
-            <div class="col-md-6">
-                <label for="rating" class="form-label">Rating</label>
-                <input type="number" class="form-control" name="rating" min="1" max="99" value="<?php echo $row['rating']; ?>">
-                <div class="invalid-feedback">Please provide a rating between 1 and 99.</div>
-            </div>
-            <div class="col-md-6">
-                <label for="photo" class="form-label">Photo URL</label>
-                <input type="url" class="form-control" name="photo" value="<?php echo $row['photo']; ?>">
-                <div class="invalid-feedback">Please provide a valid URL for the photo.</div>
-            </div>
-            <div class="col-md-6">
-                <label for="nationality" class="form-label">Nationality</label>
-                <select class="form-control" name="nationality">
-                    <option>Select Nationality</option>
-                    <option value="7" <?php echo ($row['nationality_id'] == 7) ? 'selected' : ''; ?>>Brazil</option>
-                    <option value="2" <?php echo ($row['nationality_id'] == 2) ? 'selected' : ''; ?>>Portugal</option>
-                    <option value="1" <?php echo ($row['nationality_id'] == 1) ? 'selected' : ''; ?>>Argentina</option>
-                    <option value="10" <?php echo ($row['nationality_id'] == 10) ? 'selected' : ''; ?>>Morocco</option>
-                    <option value="4" <?php echo ($row['nationality_id'] == 4) ? 'selected' : ''; ?>>France</option>
-                </select>
-                <div class="invalid-feedback">Please select a Nationality.</div>
-            </div>
-            <div class="col-md-6">
-                <label for="flag" class="form-label">Flag URL</label>
-                <input type="url" class="form-control" name="flag" value="<?php echo $row['flag']; ?>">
-                <div class="invalid-feedback">Please provide a valid URL for the flag.</div>
-            </div>
-            <div class="col-md-6">
-                <label for="club" class="form-label">Club</label>
-                <select class="form-control" name="club">
-                    <option>Select Club</option>
-                    <option value="3" <?php echo ($row['club_id'] == 3) ? 'selected' : ''; ?>>Manchester City</option>
-                    <option value="4" <?php echo ($row['club_id'] == 4) ? 'selected' : ''; ?>>Real Madrid</option>
-                    <option value="6" <?php echo ($row['club_id'] == 6) ? 'selected' : ''; ?>>Liverpool</option>
-                    <option value="10" <?php echo ($row['club_id'] == 10) ? 'selected' : ''; ?>>Manchester United</option>
-                    <option value="7" <?php echo ($row['club_id'] == 7) ? 'selected' : ''; ?>>Bayern Munich</option>
-                </select>
-                <div class="invalid-feedback">Please select a Club.</div>
-            </div>
-            <div class="col-md-6">
-                <label for="logo" class="form-label">Club URL</label>
-                <input type="url" class="form-control" name="logo" value="<?php echo isset($row['logo']) ? $row['logo'] : ''; ?>">
-                <div class="invalid-feedback">Please provide a valid URL for the Club.</div>
-            </div>
-            <div id="field-stats" class="col-12" style="display: none;">
-                <div class="row">
-                    <div class="col-md-4">
-                        <label for="pace" class="form-label">Pace</label>
-                        <input type="number" class="form-control" id="pace" name="pace" value="<?php echo $row['pace']; ?>">
+
+            <div id="field-stats" class="mt-6" style="display: none;">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="pace" class="block text-lg font-medium text-gray-700">Pace</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="pace" name="pace" value="<?php echo $row['pace']; ?>">
                     </div>
-                    <div class="col-md-4">
-                        <label for="shooting" class="form-label">Shooting</label>
-                        <input type="number" class="form-control" id="shooting" name="shooting" value="<?php echo $row['shooting']; ?>">
+                    <div>
+                        <label for="shooting" class="block text-lg font-medium text-gray-700">Shooting</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="shooting" name="shooting" value="<?php echo $row['shooting']; ?>">
                     </div>
-                    <div class="col-md-4">
-                        <label for="passing" class="form-label">Passing</label>
-                        <input type="number" class="form-control" id="passing" name="passing" value="<?php echo $row['passing']; ?>">
+                    <div>
+                        <label for="passing" class="block text-lg font-medium text-gray-700">Passing</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="passing" name="passing" value="<?php echo $row['passing']; ?>">
                     </div>
-                    <div class="col-md-4">
-                        <label for="dribbling" class="form-label">Dribbling</label>
-                        <input type="number" class="form-control" id="dribbling" name="dribbling" value="<?php echo $row['dribbling']; ?>">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <div>
+                        <label for="dribbling" class="block text-lg font-medium text-gray-700">Dribbling</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="dribbling" name="dribbling" value="<?php echo $row['dribbling']; ?>">
                     </div>
-                    <div class="col-md-4">
-                        <label for="defending" class="form-label">Defending</label>
-                        <input type="number" class="form-control" id="defending" name="defending" value="<?php echo $row['defending']; ?>">
+                    <div>
+                        <label for="defending" class="block text-lg font-medium text-gray-700">Defending</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="defending" name="defending" value="<?php echo $row['defending']; ?>">
                     </div>
-                    <div class="col-md-4">
-                        <label for="physical" class="form-label">Physical</label>
-                        <input type="number" class="form-control" id="physical" name="physical" value="<?php echo $row['physical']; ?>">
+                    <div>
+                        <label for="physical" class="block text-lg font-medium text-gray-700">Physical</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="physical" name="physical" value="<?php echo $row['physical']; ?>">
                     </div>
                 </div>
             </div>
-            <div id="gk-stats" class="col-12" style="display: none;">
-                <div class="row">
-                    <div class="col-md-4">
-                        <label for="diving" class="form-label">Diving</label>
-                        <input type="number" class="form-control" id="diving" name="diving" value="<?php echo $row['diving']; ?>">
+
+            <div id="gk-stats" class="mt-6" style="display: none;">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="diving" class="block text-lg font-medium text-gray-700">Diving</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="diving" value="<?php echo $row['diving']; ?>">
                     </div>
-                    <div class="col-md-4">
-                        <label for="handling" class="form-label">Handling</label>
-                        <input type="number" class="form-control" id="handling" name="handling" value="<?php echo $row['handling']; ?>">
+                    <div>
+                        <label for="handling" class="block text-lg font-medium text-gray-700">Handling</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="handling" value="<?php echo $row['handling']; ?>">
                     </div>
-                    <div class="col-md-4">
-                        <label for="kicking" class="form-label">Kicking</label>
-                        <input type="number" class="form-control" id="kicking" name="kicking" value="<?php echo $row['kicking']; ?>">
+                    <div>
+                        <label for="kicking" class="block text-lg font-medium text-gray-700">Kicking</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="kicking" value="<?php echo $row['kicking']; ?>">
                     </div>
-                    <div class="col-md-4">
-                        <label for="reflexes" class="form-label">Reflexes</label>
-                        <input type="number" class="form-control" id="reflexes" name="reflexes" value="<?php echo $row['reflexes']; ?>">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                    <div>
+                        <label for="reflexes" class="block text-lg font-medium text-gray-700">Reflexes</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="reflexes" value="<?php echo $row['reflexes']; ?>">
                     </div>
-                    <div class="col-md-4">
-                        <label for="speed" class="form-label">Speed</label>
-                        <input type="number" class="form-control" id="speed" name="speed" value="<?php echo $row['speed']; ?>">
+                    <div>
+                        <label for="speed" class="block text-lg font-medium text-gray-700">Speed</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="speed" value="<?php echo $row['speed']; ?>">
                     </div>
-                    <div class="col-md-4">
-                        <label for="positioning" class="form-label">Positioning</label>
-                        <input type="number" class="form-control" id="positioning" name="positioning" value="<?php echo $row['positioning']; ?>">
+                    <div>
+                        <label for="positioning" class="block text-lg font-medium text-gray-700">Positioning</label>
+                        <input type="number" class="mt-2 p-3 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" name="positioning" value="<?php echo $row['positioning']; ?>">
                     </div>
                 </div>
             </div>
-        </div>
-        <input type="submit" form="form-player" class="btn btn-success" name="update_player" value="Update">
-    </form>
 
+            <button type="submit" name="update_player" class="mt-8 px-6 py-3 bg-blue-500 text-white text-lg rounded-md hover:bg-blue-600">Update Player</button>
+        </form>
     </div>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         function toggleFields() {
-            var position = document.getElementById('position').value;
-            var fieldStats = document.getElementById('field-stats');
-            var gkStats = document.getElementById('gk-stats');
-
+            const position = document.querySelector('select[name="position"]').value;
+            const fieldStats = document.getElementById('field-stats');
+            const gkStats = document.getElementById('gk-stats');
+            
             if (position === 'GK') {
                 fieldStats.style.display = 'none';
                 gkStats.style.display = 'block';
-            } else if (position !== 'Select Position') {
-                fieldStats.style.display = 'block';
-                gkStats.style.display = 'none';
             } else {
-                fieldStats.style.display = 'none';
+                fieldStats.style.display = 'block';
                 gkStats.style.display = 'none';
             }
         }
-
-        document.addEventListener('DOMContentLoaded', toggleFields);
     </script>
-    <script src="../frontend/script.js"></script>
+
 </body>
+</html>
